@@ -28,9 +28,13 @@ namespace miniSnesToolsGUI
 
         private void button1_Click(object sender, EventArgs e)
         {
+            openFileDialog1.Filter = "snes Files(*.sfc;*.smc)|*.sfc;*.smc| All files(*.*) |*.*";
+            openFileDialog1.FilterIndex = 1;
+            openFileDialog1.RestoreDirectory = true;
+            openFileDialog1.FileName = "";
             if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                textFileName.Text = openFileDialog1.SafeFileName;
+                textFileName.Text = openFileDialog1.FileName;
               
 
             }
@@ -41,15 +45,19 @@ namespace miniSnesToolsGUI
         private void convertFile()
         {
             lblLog.Text = "converting file.";
+            lblLog.Refresh();
             System.Diagnostics.Process proc = new System.Diagnostics.Process();
             proc.EnableRaisingEvents = false;
             proc.StartInfo.FileName = scriptName;
             proc.Start();
             proc.WaitForExit();
-          //  MessageBox.Show(" sfrom was created.");
+           
+            
         }
         private void moveFolderToOutputFolder()
         {
+            lblLog.Text = "Moving game folder from temp location  to Output Folder.";
+            lblLog.Refresh();
             string currentDir = System.IO.Directory.GetCurrentDirectory() + @"\"+ gameIDString;
             outputFolder = txtOutputFolder.Text + @"\" + gameIDString;
 
@@ -62,53 +70,76 @@ namespace miniSnesToolsGUI
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                MessageBox.Show("A Folder with the name: " + gameIDString + " already exists, manualy delete folder and try again.", "OH DEAR!");
             }
         }
 
         private void copyOriginalRomToTemp()
         {
             lblLog.Text = "copying original rom to temp file.";
+            lblLog.Refresh();
             string currentDir = System.IO.Directory.GetCurrentDirectory();
             string sourceFile = openFileDialog1.FileName;
             string destFile = currentDir + @"\temp.smc";
-            System.IO.File.Copy(sourceFile, destFile,true);
+            try
+            {
+                System.IO.File.Copy(sourceFile, destFile, true);
+            }
+            catch (Exception e) {
+                MessageBox.Show("Something Went Wrong (probably with a file/folder getting moved around), just try again it will work... eventualy.", "OH DEAR!");
+            }
         }
         private void copyFileToDir()
         {
             lblLog.Text = "copying temp sfrom to final game folder.";
+            lblLog.Refresh();
             string currentDir = System.IO.Directory.GetCurrentDirectory();
             string sourceFile = currentDir + @"\temp.sfrom";
             string destFile = currentDir + @"\" + gameIDString + @"\" + gameIDString+ @".sfrom" ;
-            
-          
-           //MOVE sfrom file
-           System.IO.File.Move(sourceFile, destFile);
+
+
+            //MOVE sfrom file
+            try
+            {
+                System.IO.File.Move(sourceFile, destFile);
+            }
+            catch (Exception e)
+            {
+               
+            }
 
             //MOVE boxart file
-          // sourceFile = currentDir + @"\" + gameIDString + @".png";
-          // destFile = currentDir + @"\" + gameIDString + @"\" + gameIDString + @".png";
-           // System.IO.File.Move(sourceFile, destFile);
+            // sourceFile = currentDir + @"\" + gameIDString + @".png";
+            // destFile = currentDir + @"\" + gameIDString + @"\" + gameIDString + @".png";
+            // System.IO.File.Move(sourceFile, destFile);
             //delete file after copy
             // File.Delete(sourceFile);
         }
         private void makeDir()
         {
             lblLog.Text = "creating game folder.";
+            lblLog.Refresh();
             //Create a new subfolder under the current active folder
             string activeDir = System.IO.Directory.GetCurrentDirectory();
             string newPath = System.IO.Path.Combine(activeDir, gameIDString);
-            if (txtID.Text != "")
+
+            // Create the subfolder
+            try
             {
-                // Create the subfolder
                 System.IO.Directory.CreateDirectory(newPath);
             }
-            else { MessageBox.Show(" Please fill out game id with 5 Unuiqe letters."); }
+            catch (Exception e)
+            {
+                MessageBox.Show("Something Went Wrong Creating a Folder, just try again it will work... eventualy.", "OH DEAR!");
+
+            }
+
         }
         private void savePictureFile()
         {
 
             lblLog.Text = "saving picture files.";
+            lblLog.Refresh();
             using (Bitmap bitmap = new Bitmap(228, 160))
                 {
                     pictureBoxArt.DrawToBitmap(bitmap, pictureBoxArt.ClientRectangle);
@@ -129,26 +160,53 @@ namespace miniSnesToolsGUI
 
 
         }
+        private  bool checkAllInfoFilledOut()
+        {
+            //checks to see if any info has been left blank (at least its a start)
+            if(textFileName.Text == "")
+             return true;
+            if (textImageFile.Text == "")
+                return true;
+            if (txtID.Text == "")
+                return true;
+            if (txtPublisher.Text == "")
+                return true;
+            if (txtReleaseDate.Text == "")
+                return true;
+            if (txtOutputFolder.Text == "")
+                return true;
+            if (textGameName.Text == "")
+                return true;
+
+            return false;
+        }
         private void cmdStart_Click(object sender, EventArgs e)
         {
-            lblLog.Text = "PLEASE WAIT...";
-            gameIDString = "CLV-P-" + txtID.Text;
-            copyOriginalRomToTemp();
-            makeDir();
-            createDesktopFile();
-            savePictureFile();
-            convertFile();
-            copyFileToDir();
-            convertToUnixFile();
-            
-            moveFolderToOutputFolder();
-            lblLog.Text = "DONE!";
+            //WARNING: MESSAING WITH THE ORDER WILL BREAK THE PROGRAM
+           bool abort =  checkAllInfoFilledOut();
+            if (!abort)
+            {
+                lblLog.Text = "PLEASE WAIT...";
+                lblLog.Refresh();
+                gameIDString = "CLV-P-" + txtID.Text;
+                copyOriginalRomToTemp();
+                makeDir();
+                createDesktopFile();
+                savePictureFile();
+                convertFile();
+                copyFileToDir();
+                convertToUnixFile();
 
+                moveFolderToOutputFolder();
+                lblLog.Text = "DONE!";
+            }
+            else { MessageBox.Show(" Please fill out all information, then try again.","HEY, LISTEN!"); }
         }
 
         private void convertToUnixFile()
         {
             lblLog.Text = "converting .desktop file to unix type.";
+            lblLog.Refresh();
             const byte CR = 0x0D;
             const byte LF = 0x0A;
             string fileName = System.IO.Directory.GetCurrentDirectory() + @"\"+  gameIDString + @"\" + gameIDString + ".desktop";
@@ -179,6 +237,7 @@ namespace miniSnesToolsGUI
         private void createDesktopFile()
         {
             lblLog.Text = "creating .desktop file.";
+            lblLog.Refresh();
             string activeDir = System.IO.Directory.GetCurrentDirectory();
 
             //STRINGS FOR .DESKTOP FILE
@@ -224,6 +283,10 @@ namespace miniSnesToolsGUI
 
         private void cmdImageFile_Click(object sender, EventArgs e)
         {
+            openFileDialog2.Filter = "Image Files(*.bmp;*.jpg;*.png)|*.bmp;*.jpg;*.png| All files(*.*) |*.*";
+            openFileDialog2.FilterIndex = 1;
+            openFileDialog2.RestoreDirectory = true;
+            openFileDialog2.FileName = "";
             if (openFileDialog2.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 textImageFile.Text = openFileDialog2.FileName;
@@ -292,5 +355,11 @@ namespace miniSnesToolsGUI
         {
 
         }
+
+        private void textImageFile_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+       
     }
 }

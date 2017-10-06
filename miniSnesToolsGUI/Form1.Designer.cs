@@ -43,6 +43,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.checkSaveFeature = new System.Windows.Forms.CheckBox();
             this.txtReleaseDate = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.txtPublisher = new System.Windows.Forms.TextBox();
@@ -54,11 +55,10 @@
             this.label2 = new System.Windows.Forms.Label();
             this.textGameName = new System.Windows.Forms.TextBox();
             this.lblLog = new System.Windows.Forms.Label();
-            this.checkSaveFeature = new System.Windows.Forms.CheckBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.txtOutputFolder = new System.Windows.Forms.TextBox();
@@ -104,6 +104,7 @@
             // txtID
             // 
             this.txtID.Location = new System.Drawing.Point(46, 64);
+            this.txtID.MaxLength = 5;
             this.txtID.Name = "txtID";
             this.txtID.Size = new System.Drawing.Size(46, 20);
             this.txtID.TabIndex = 3;
@@ -140,10 +141,12 @@
             // 
             // textImageFile
             // 
+            this.textImageFile.AcceptsReturn = true;
             this.textImageFile.Location = new System.Drawing.Point(6, 19);
             this.textImageFile.Name = "textImageFile";
             this.textImageFile.Size = new System.Drawing.Size(193, 20);
             this.textImageFile.TabIndex = 7;
+            this.textImageFile.TextChanged += new System.EventHandler(this.textImageFile_TextChanged);
             // 
             // cmdImageFile
             // 
@@ -205,6 +208,16 @@
             this.groupBox1.TabIndex = 12;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Rom Info.";
+            // 
+            // checkSaveFeature
+            // 
+            this.checkSaveFeature.AutoSize = true;
+            this.checkSaveFeature.Location = new System.Drawing.Point(136, 66);
+            this.checkSaveFeature.Name = "checkSaveFeature";
+            this.checkSaveFeature.Size = new System.Drawing.Size(141, 17);
+            this.checkSaveFeature.TabIndex = 22;
+            this.checkSaveFeature.Text = "Game has Save Feature";
+            this.checkSaveFeature.UseVisualStyleBackColor = true;
             // 
             // txtReleaseDate
             // 
@@ -309,16 +322,6 @@
             this.lblLog.TabIndex = 13;
             this.lblLog.Text = "LOG FILE";
             // 
-            // checkSaveFeature
-            // 
-            this.checkSaveFeature.AutoSize = true;
-            this.checkSaveFeature.Location = new System.Drawing.Point(136, 66);
-            this.checkSaveFeature.Name = "checkSaveFeature";
-            this.checkSaveFeature.Size = new System.Drawing.Size(141, 17);
-            this.checkSaveFeature.TabIndex = 22;
-            this.checkSaveFeature.Text = "Game has Save Feature";
-            this.checkSaveFeature.UseVisualStyleBackColor = true;
-            // 
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -340,19 +343,19 @@
             this.fileToolStripMenuItem.Text = "&File";
             this.fileToolStripMenuItem.Click += new System.EventHandler(this.fileToolStripMenuItem_Click);
             // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(92, 22);
+            this.exitToolStripMenuItem.Text = "E&xit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
             this.aboutToolStripMenuItem.Size = new System.Drawing.Size(52, 20);
             this.aboutToolStripMenuItem.Text = "&About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
-            // 
-            // exitToolStripMenuItem
-            // 
-            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.exitToolStripMenuItem.Text = "E&xit";
-            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // label7
             // 
