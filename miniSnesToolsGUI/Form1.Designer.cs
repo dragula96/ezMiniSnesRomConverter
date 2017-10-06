@@ -108,6 +108,7 @@
             this.txtID.Name = "txtID";
             this.txtID.Size = new System.Drawing.Size(46, 20);
             this.txtID.TabIndex = 3;
+            this.txtID.TextChanged += new System.EventHandler(this.txtID_TextChanged);
             // 
             // cmdStart
             // 

@@ -267,7 +267,7 @@ namespace miniSnesToolsGUI
             }
             else { sixteenline = @"SaveCount=0"; }
 
-            string seventeenthline = @"SortRawTitle=" + textGameName.Text;
+            string seventeenthline = @"SortRawTitle=" + textGameName.Text.ToLower();
             string eighteenline = @"SortRawPublisher=" + txtPublisher.Text;
             string nineteenline = @"Copyright=" + textGameName.Text + @"™ ©" + txtReleaseDate.Text + " " + txtPublisher.Text;
 
@@ -360,6 +360,11 @@ namespace miniSnesToolsGUI
         {
 
         }
-       
+
+        private void txtID_TextChanged(object sender, EventArgs e)
+        {
+            txtID.Text = txtID.Text.ToUpper();
+            txtID.Select(txtID.Text.Length, 0);
+        }
     }
 }
