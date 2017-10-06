@@ -1,26 +1,20 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+# script by Shabbypenguin from reddit
+# fixes 2 player not working from previous used script
 
-# Permission to use, copy, modify, and/or distribute this software for any
-# purpose with or without fee is hereby granted.
-#
-# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-# REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-# INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-# LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-# OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-# PERFORMANCE OF THIS SOFTWARE.
-
-import argparse
+import string
+from random import choices
 from struct import pack
+import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument('input', type=str)
+parser.add_argument('output', type=str)
+args = parser.parse_args()
 
-ROM_SIZE = {0x08: 0x40000,
-            0x09: 0x80000,
-            0x0A: 0x100000,
-            0x0B: 0x200000,
-            0x0C: 0x400000}
-
+romfile = open(args.input, "rb")
+rom = romfile.read()
+romfile.close()
 
 def get_format(data):
     """Returns 0x14 for LoROM and 0x15 for HiROM"""
@@ -31,8 +25,7 @@ def get_format(data):
     if all(31 < char < 127 for char in rom[0xFFC0:0xFFC0 + 21]):
         return 0x15
     return None
-
-
+	
 def get_preset_id(data, rom_format):
     """Returns a preset ID for some known games, otherwise 0x0"""
 
@@ -46,67 +39,65 @@ def get_preset_id(data, rom_format):
         return 0x1117
     if name == "MEGAMAN X3":
         return 0x113D
+    if name == "PILOTWINGS":
+        return 0x10BD
+    if name == "KIRBY'S DREAM LAND 3":
+        return 0x109C
 
-    return 0x0
-
+    return 0x1011
 
 def get_super_fx(data, rom_format):
     """Returns 0x0C if the ROM uses a Super-FX chip, otherwise 0x0"""
 
     SFX_TYPES = [0x13, 0x14, 0x15, 0x1a]
 
-    if (rom_format == 0x14 and rom[0x7FD6] in SFX_TYPES)\
-    or (rom_format == 0x15 and rom[0xFFD6] in SFX_TYPES):
+    if (rom_format == 0x14 and data[0x7FD6] in SFX_TYPES)\
+    or (rom_format == 0x15 and data[0xFFD6] in SFX_TYPES):
         return 0x0C
 
     return 0x0
 
+# Strip out potential header
+rom = rom[len(rom) % 0x400:]
+romsize = len(rom)
+filesize = romsize + 0x60
+endofrom = romsize + 0x30
+fileend = filesize - 0x15
+gameid = "WUP-J" + ''.join(choices(string.ascii_uppercase, k=2)) + "E"
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="""Converts SNES ROMs to .sfrom for
-                                                  the SNES Classic""")
-    parser.add_argument('input', type=argparse.FileType('rb'))
-    parser.add_argument('output', type=argparse.FileType('wb'))
-    args = parser.parse_args()
+header = pack('<7I4xI8s4x',
+              0x00000100,
+              filesize,
+              0x00000030,
+              endofrom,
+              endofrom,
+              endofrom,
+              filesize,
+              fileend,
+              gameid.encode(encoding='UTF-8'))
 
-    # Read in entire file because who needs RAM
-    rom = args.input.read()
-    args.input.close()
+emuspeed = 0x3C
+volume = 0x64
 
-    # Strip out potential header
-    rom = rom[len(rom) % 0x400:]
 
-    # Simple header format
-    # Start Size Type Contents
-    # 0x00  0x04 I    0x100
-    # 0x04  0x04 I    File size
-    # 0x08  0x04 I    0x50
-    # 0x0C  0x08 8x   0x0
-    # 0x14  0x04 I    0x30
-    # 0x18  0x19 25x  0x0
-    # 0x31  0x04 I    ROM Size
-    # 0x35  0x08 8x   0x0
-    # 0x3D  0x02 H    Game preset ID
-    # 0x3F  0x02 2x   0x0
-    # 0x41  0x01 B    ROM format (hi/lo)
-    # 0x42  0x01 B    Super-FX ? 0x0C : 0x0
-    # 0x43  0x0D 13x  0x0
-
-    rom_format = get_format(rom)
-    if not rom_format:
-        print("Can't get ROM format. Corrupted?")
-        args.output.close()
-        quit(-1)
-
-    header = pack('<3I8xI25xI8xH2x2B13x',
-                  0x100,
-                  len(rom) + 0x50,
-                  0x50,
-                  0x30,
-                  len(rom),
-                  get_preset_id(rom, rom_format),
-                  rom_format,
-                  get_super_fx(rom, rom_format))
-
-    args.output.write(header + rom)
+rom_format = get_format(rom)
+if not rom_format:
+    print("Can't get ROM format. Corrupted?")
     args.output.close()
+    quit(-1)
+
+footer = pack('<BI8xH3B0x2I22x',
+              emuspeed,
+              romsize,
+              get_preset_id(rom, rom_format),
+              0x2,
+              volume,
+              rom_format,
+              get_super_fx(rom, rom_format),
+              0x000)
+
+out = header + rom + footer
+
+outfile = open(args.output, "wb")
+outfile.write(out)
+outfile.close()
