@@ -54,6 +54,21 @@ namespace miniSnesToolsGUI
            
             
         }
+
+        static public void CopyTempFolderToFinalDestination(string sourceFolder, string destFolder)
+        {
+            if (!Directory.Exists(destFolder))
+                Directory.CreateDirectory(destFolder);
+            string[] files = Directory.GetFiles(sourceFolder);
+            foreach (string file in files)
+            {
+                string name = Path.GetFileName(file);
+                string dest = Path.Combine(destFolder, name);
+                File.Copy(file, dest);
+            }
+            
+        }
+
         private void moveFolderToOutputFolder()
         {
             lblLog.Text = "Moving game folder from temp location  to Output Folder.";
@@ -61,17 +76,21 @@ namespace miniSnesToolsGUI
             string currentDir = System.IO.Directory.GetCurrentDirectory() + @"\"+ gameIDString;
             outputFolder = txtOutputFolder.Text + @"\" + gameIDString;
 
-            
-           
+                   
 
             try
             {
-                Directory.Move(currentDir, outputFolder);
+                CopyTempFolderToFinalDestination(currentDir, outputFolder);
+              
             }
             catch (Exception e)
             {
                 MessageBox.Show("A Folder with the name: " + gameIDString + " already exists, manualy delete folder and try again.", "OH DEAR!");
             }
+            Directory.Delete(currentDir, true);
+            bool directoryExists = Directory.Exists(currentDir);
+
+           
         }
 
         private void copyOriginalRomToTemp()
